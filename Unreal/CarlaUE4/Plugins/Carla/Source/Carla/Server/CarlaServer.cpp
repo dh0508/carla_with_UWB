@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include "Carla.h"
 #include "rpc/this_session.h"
@@ -25,6 +33,7 @@
 #include "Carla/Util/RayTracer.h"
 #include "Carla/Vehicle/CarlaWheeledVehicle.h"
 #include "Carla/Sensor/CustomV2XSensor.h"
+#include "Carla/Sensor/UWBSensor.h"
 #include "Carla/Walker/WalkerController.h"
 #include "Carla/Walker/WalkerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -1042,17 +1051,46 @@ BIND_SYNC(send) << [this](
           ECarlaServerResponse::FunctionNotAvailiableWhenDormant,
           " Actor Id: " + FString::FromInt(ActorId));
     }
-    ACustomV2XSensor* Sensor = Cast<ACustomV2XSensor>(CarlaActor->GetActor());
-    if (!Sensor)
+    if (ACustomV2XSensor* V2XSensor = Cast<ACustomV2XSensor>(CarlaActor->GetActor()))
+    {
+      V2XSensor->Send(Data);
+      return R<void>::Success();
+    }
+    return RespondError(
+      "send",
+      ECarlaServerResponse::ActorTypeMismatch,
+      " Actor Id: " + FString::FromInt(ActorId));
+  };
+
+  BIND_SYNC(send_uwb_payload) << [this](
+      cr::ActorId ActorId,
+      std::string Payload) -> R<void>
+  {
+    REQUIRE_CARLA_EPISODE();
+    FCarlaActor* CarlaActor = Episode->FindCarlaActor(ActorId);
+    if (!CarlaActor)
     {
       return RespondError(
-        "send",
-        ECarlaServerResponse::ActorTypeMismatch,
-        " Actor Id: " + FString::FromInt(ActorId));
+          "send_uwb_payload",
+          ECarlaServerResponse::ActorNotFound,
+          " Actor Id: " + FString::FromInt(ActorId));
     }
-
-    Sensor->Send(Data);
-    return R<void>::Success();
+    if (CarlaActor->IsDormant())
+    {
+      return RespondError(
+          "send_uwb_payload",
+          ECarlaServerResponse::FunctionNotAvailiableWhenDormant,
+          " Actor Id: " + FString::FromInt(ActorId));
+    }
+    if (AUWBSensor* UWBSensor = Cast<AUWBSensor>(CarlaActor->GetActor()))
+    {
+      UWBSensor->SetPayload(std::move(Payload));
+      return R<void>::Success();
+    }
+    return RespondError(
+      "send_uwb_payload",
+      ECarlaServerResponse::ActorTypeMismatch,
+      " Actor Id: " + FString::FromInt(ActorId));
   };
 
   BIND_SYNC(set_ignored_vehicles) << [this](

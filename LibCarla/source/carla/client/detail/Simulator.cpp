@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include "carla/client/detail/Simulator.h"
 
@@ -456,6 +464,10 @@ EpisodeProxy Simulator::GetCurrentEpisode() {
 
   void Simulator::Send(const Sensor &sensor, const carla::rpc::CustomV2XBytes &data) {
     _client.Send(sensor.GetId(), data);
+  }
+
+  void Simulator::SendUWBPayload(const Sensor &sensor, const std::string &payload) {
+    _client.SendUWBPayload(sensor.GetId(), payload);
   }
 
   void Simulator::SetIgnoredVehicles(const Sensor &sensor, const std::vector<ActorId>& vehicle_ids) {

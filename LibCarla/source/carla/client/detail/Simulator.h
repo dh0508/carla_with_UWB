@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #pragma once
 
@@ -733,6 +741,8 @@ namespace detail {
         uint32_t gbuffer_id);
 
     void Send(const Sensor &sensor, const carla::rpc::CustomV2XBytes &data);
+
+    void SendUWBPayload(const Sensor &sensor, const std::string &payload);
 
     void SetIgnoredVehicles(const Sensor &sensor, const std::vector<ActorId>& vehicle_ids);
 

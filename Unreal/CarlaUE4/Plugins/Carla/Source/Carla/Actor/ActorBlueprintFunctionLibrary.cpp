@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include "Carla.h"
 #include "Carla/Actor/ActorBlueprintFunctionLibrary.h"
@@ -13,6 +21,7 @@
 #include "Carla/Sensor/SceneCaptureSensor_WideAngleLens.h"
 #include "Carla/Sensor/ShaderBasedSensor_WideAngleLens.h"
 #include "Carla/Sensor/V2X/PathLossModel.h"
+#include "Carla/Sensor/UWBSensor.h"
 #include "Carla/Util/ScopedStack.h"
 
 #include <algorithm>
@@ -2473,4 +2482,94 @@ void UActorBlueprintFunctionLibrary::SetCustomV2X(
 
 
 }
+
+// =============================================================================
+// -- UWB Sensor ---------------------------------------------------------------
+// =============================================================================
+
+FActorDefinition UActorBlueprintFunctionLibrary::MakeUWBDefinition()
+{
+  FActorDefinition Definition;
+  bool Success;
+  MakeUWBDefinition(Success, Definition);
+  check(Success);
+  return Definition;
+}
+
+void UActorBlueprintFunctionLibrary::MakeUWBDefinition(
+    bool &Success,
+    FActorDefinition &Definition)
+{
+  FillIdAndTags(Definition, TEXT("sensor"), TEXT("other"), TEXT("uwb"));
+  AddVariationsForSensor(Definition);
+
+  FActorVariation MaxRange;
+  MaxRange.Id = TEXT("max_range");
+  MaxRange.Type = EActorAttributeType::Float;
+  MaxRange.RecommendedValues = { TEXT("100.0") };
+  MaxRange.bRestrictToRecommended = false;
+
+  FActorVariation LOSStdDev;
+  LOSStdDev.Id = TEXT("noise_los_stddev");
+  LOSStdDev.Type = EActorAttributeType::Float;
+  LOSStdDev.RecommendedValues = { TEXT("0.05") };
+  LOSStdDev.bRestrictToRecommended = false;
+
+  FActorVariation NLOSBiasMin;
+  NLOSBiasMin.Id = TEXT("noise_nlos_bias_min");
+  NLOSBiasMin.Type = EActorAttributeType::Float;
+  NLOSBiasMin.RecommendedValues = { TEXT("0.2") };
+  NLOSBiasMin.bRestrictToRecommended = false;
+
+  FActorVariation NLOSBiasMax;
+  NLOSBiasMax.Id = TEXT("noise_nlos_bias_max");
+  NLOSBiasMax.Type = EActorAttributeType::Float;
+  NLOSBiasMax.RecommendedValues = { TEXT("2.0") };
+  NLOSBiasMax.bRestrictToRecommended = false;
+
+  FActorVariation NLOSStdDev;
+  NLOSStdDev.Id = TEXT("noise_nlos_stddev");
+  NLOSStdDev.Type = EActorAttributeType::Float;
+  NLOSStdDev.RecommendedValues = { TEXT("0.3") };
+  NLOSStdDev.bRestrictToRecommended = false;
+
+  FActorVariation NoiseSeed;
+  NoiseSeed.Id = TEXT("noise_seed");
+  NoiseSeed.Type = EActorAttributeType::Int;
+  NoiseSeed.RecommendedValues = { TEXT("0") };
+  NoiseSeed.bRestrictToRecommended = false;
+
+  Definition.Variations.Append({ MaxRange, LOSStdDev, NLOSBiasMin, NLOSBiasMax, NLOSStdDev, NoiseSeed });
+
+  Success = CheckActorDefinition(Definition);
+}
+
+void UActorBlueprintFunctionLibrary::SetUWB(
+    const FActorDescription &Description,
+    AUWBSensor *UWB)
+{
+  CARLA_ABFL_CHECK_ACTOR(UWB);
+
+  if (Description.Variations.Contains("noise_seed"))
+  {
+    UWB->SetSeed(
+        RetrieveActorAttributeToInt("noise_seed", Description.Variations, 0));
+  }
+  else
+  {
+    UWB->SetSeed(UWB->GetRandomEngine()->GenerateRandomSeed());
+  }
+
+  UWB->SetMaxRange(
+      RetrieveActorAttributeToFloat("max_range", Description.Variations, 100.0f));
+  UWB->SetLOSStdDev(
+      RetrieveActorAttributeToFloat("noise_los_stddev", Description.Variations, 0.05f));
+  UWB->SetNLOSBiasMin(
+      RetrieveActorAttributeToFloat("noise_nlos_bias_min", Description.Variations, 0.2f));
+  UWB->SetNLOSBiasMax(
+      RetrieveActorAttributeToFloat("noise_nlos_bias_max", Description.Variations, 2.0f));
+  UWB->SetNLOSStdDev(
+      RetrieveActorAttributeToFloat("noise_nlos_stddev", Description.Variations, 0.3f));
+}
+
 #undef CARLA_ABFL_CHECK_ACTOR

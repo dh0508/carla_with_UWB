@@ -3,6 +3,14 @@
   //
   // This work is licensed under the terms of the MIT license.
   // For a copy, see <https://opensource.org/licenses/MIT>.
+  //
+  // -----------------------------------------------------------------------------
+  // Modifications:
+  // - Added UWB sensor
+  //
+  // Author: dh0508 (GitHub: https://github.com/dh0508)
+  // Date: 2026
+  // -----------------------------------------------------------------------------
 
   #pragma once
 
@@ -27,6 +35,7 @@
   class AShaderBasedSensor;
   class ASceneCaptureSensor_WideAngleLens;
   class AShaderBasedSensor_WideAngleLens;
+  class AUWBSensor;
   struct FLidarDescription;
 
   UCLASS()
@@ -148,7 +157,14 @@
     UFUNCTION(Category = "Carla Actor", BlueprintCallable)
     static void MakeCustomV2XDefinition(
         bool &Success,
-        FActorDefinition &Definition);            
+        FActorDefinition &Definition);
+
+    static FActorDefinition MakeUWBDefinition();
+
+    UFUNCTION(Category = "Carla Actor", BlueprintCallable)
+    static void MakeUWBDefinition(
+        bool &Success,
+        FActorDefinition &Definition);
 
     UFUNCTION(Category = "Carla Actor", BlueprintCallable)
     static void MakeVehicleDefinition(
@@ -274,4 +290,5 @@
 
     static void SetV2X(const FActorDescription &Description, AV2XSensor *V2X);
     static void SetCustomV2X(const FActorDescription &Description, ACustomV2XSensor *V2X);
+    static void SetUWB(const FActorDescription &Description, AUWBSensor *UWB);
   };

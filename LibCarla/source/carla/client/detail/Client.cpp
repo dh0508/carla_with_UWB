@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include "carla/client/detail/Client.h"
 
@@ -726,6 +734,10 @@ namespace detail {
 
   void Client::Send(rpc::ActorId ActorId, const rpc::CustomV2XBytes &data) {
     _pimpl->AsyncCall("send", ActorId, data);
+  }
+
+  void Client::SendUWBPayload(rpc::ActorId ActorId, const std::string &payload) {
+    _pimpl->AsyncCall("send_uwb_payload", ActorId, payload);
   }
 
   void Client::SetIgnoredVehicles(rpc::ActorId ActorId, const std::vector<rpc::ActorId>& vehicle_ids) {

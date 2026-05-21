@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #pragma once
 
@@ -52,8 +60,11 @@ namespace client {
       return listening_mask.test(id + 1);
     }
 
-    /// Send data via this sensor
+    /// Send data via a Custom V2X sensor
     void Send(const rpc::CustomV2XBytes &data);
+
+    /// Send an arbitrary JSON payload via a UWB sensor
+    void SendUWBPayload(const std::string &payload);
 
     /// @copydoc Actor::Destroy()
     ///

@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #ifndef LIBCARLA_SENSOR_REGISTRY_INCLUDE_H
 #define LIBCARLA_SENSOR_REGISTRY_INCLUDE_H
@@ -30,6 +38,7 @@
 #include "carla/sensor/s11n/GBufferUint8Serializer.h"
 #include "carla/sensor/s11n/GBufferFloatSerializer.h"
 #include "carla/sensor/s11n/V2XSerializer.h"
+#include "carla/sensor/s11n/UWBSerializer.h"
 
 // 2. Add a forward-declaration of the sensor here.
 class ACollisionSensor;
@@ -60,6 +69,7 @@ struct FCameraGBufferFloat;
 class AV2XSensor;
 class ACustomV2XSensor;
 class AHSSLidar;
+class AUWBSensor;
 
 namespace carla {
 namespace sensor {
@@ -99,9 +109,8 @@ namespace sensor {
     std::pair<FCameraGBufferFloat *, s11n::GBufferFloatSerializer>,
     std::pair<AV2XSensor *, s11n::CAMDataSerializer>,
     std::pair<ACustomV2XSensor *, s11n::CustomV2XDataSerializer>,
-    std::pair<AHSSLidar *, s11n::LidarSerializer>
-    
-
+    std::pair<AHSSLidar *, s11n::LidarSerializer>,
+    std::pair<AUWBSensor *, s11n::UWBSerializer>
   >;
 
 } // namespace sensor
@@ -138,5 +147,6 @@ namespace sensor {
 #include "Carla/Sensor/V2XSensor.h"
 #include "Carla/Sensor/CustomV2XSensor.h"
 #include "Carla/Sensor/HSSLidar.h"
+#include "Carla/Sensor/UWBSensor.h"
 
 #endif // LIBCARLA_SENSOR_REGISTRY_WITH_SENSOR_INCLUDES

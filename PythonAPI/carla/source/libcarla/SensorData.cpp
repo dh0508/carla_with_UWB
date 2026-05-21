@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include <carla/PythonUtil.h>
 #include <carla/image/ImageConverter.h>
@@ -23,6 +31,7 @@
 #include <carla/sensor/data/V2XEvent.h>
 #include <carla/sensor/data/V2XData.h>
 #include <carla/sensor/data/LibITS.h>
+#include <carla/sensor/data/UWBMeasurement.h>
 
 #include <carla/sensor/data/RadarData.h>
 
@@ -101,6 +110,25 @@ namespace data {
         << ", lon=" << std::to_string(meas.GetLongitude())
         << ", alt=" << std::to_string(meas.GetAltitude())
         << ')';
+    return out;
+  }
+
+  std::ostream &operator<<(std::ostream &out, const UWBDetectionView &d) {
+    out << "UWBDetection("
+        << "anchor_id=" << d.GetAnchorId()
+        << ", distance=" << d.GetDistance() << "m"
+        << ", payload_size=" << d.GetPayload().size() << "B"
+        << ')';
+    return out;
+  }
+
+  std::ostream &operator<<(std::ostream &out, const UWBMeasurement &meas) {
+    out << "UWBMeasurement(frame=" << std::to_string(meas.GetFrame())
+        << ", timestamp=" << std::to_string(meas.GetTimestamp())
+        << ", detections=" << std::to_string(meas.GetDetectionCount()) << ")\n";
+    for (size_t i = 0; i < meas.size(); ++i) {
+      out << "  [" << i << "] " << meas.at(i) << '\n';
+    }
     return out;
   }
 
@@ -617,5 +645,36 @@ void export_sensor_data() {
     .def("__getitem__", +[](const csd::CustomV2XEvent &self, size_t pos) -> csd::CustomV2XData {
       return self.at(pos);
     })
+  ;
+
+  // -- UWB Sensor ---------------------------------------------------------
+
+  class_<csd::UWBDetectionView>("UWBDetection")
+    .add_property("anchor_id", &csd::UWBDetectionView::GetAnchorId)
+    .add_property("distance",  &csd::UWBDetectionView::GetDistance)
+    .add_property("payload",   +[](const csd::UWBDetectionView &self) -> boost::python::object {
+      const std::string &p = self.GetPayload();
+      if (p.empty())
+        return boost::python::object();  // None
+      // Try to decode as JSON; fall back to raw string on failure.
+      try {
+        boost::python::object json_module = boost::python::import("json");
+        boost::python::object str_obj(p);
+        return json_module.attr("loads")(str_obj);
+      } catch (...) {
+        return boost::python::object(p);
+      }
+    })
+    .def(self_ns::str(self_ns::self))
+  ;
+
+  class_<csd::UWBMeasurement, bases<cs::SensorData>, boost::noncopyable,
+      boost::shared_ptr<csd::UWBMeasurement>>("UWBMeasurement", no_init)
+    .def("__len__",      &csd::UWBMeasurement::size)
+    .def("__iter__",     iterator<csd::UWBMeasurement>())
+    .def("__getitem__", +[](const csd::UWBMeasurement &self, size_t pos) -> csd::UWBDetectionView {
+      return self.at(pos);
+    })
+    .def(self_ns::str(self_ns::self))
   ;
 }

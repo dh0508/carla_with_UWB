@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include <carla/PythonUtil.h>
 #include <carla/client/ClientSideSensor.h>
@@ -25,6 +33,16 @@ static void SubscribeToGBuffer(
   self.ListenToGBuffer(GBufferId, MakeCallback(std::move(callback)));
 }
 
+static void SendUWBPayload(carla::client::ServerSideSensor &self, boost::python::object obj) {
+  namespace py = boost::python;
+  py::object json_module = py::import("json");
+  py::dict kwargs;
+  kwargs["separators"] = py::make_tuple(",", ":");
+  std::string payload = py::extract<std::string>(
+      json_module.attr("dumps")(*py::make_tuple(obj), **kwargs));
+  self.SendUWBPayload(payload);
+}
+
 void export_sensor() {
   using namespace boost::python;
   namespace cc = carla::client;
@@ -45,6 +63,7 @@ void export_sensor() {
     .def("is_listening_gbuffer", &cc::ServerSideSensor::IsListeningGBuffer, (arg("gbuffer_id")))
     .def("stop_gbuffer", &cc::ServerSideSensor::StopGBuffer, (arg("gbuffer_id")))
     .def("send", &cc::ServerSideSensor::Send, (arg("message")))
+    .def("send_uwb_payload", &SendUWBPayload, (arg("obj")))
     .def(self_ns::str(self_ns::self))
   ;
 

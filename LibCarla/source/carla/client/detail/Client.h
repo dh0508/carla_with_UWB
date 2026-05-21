@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #pragma once
 
@@ -469,6 +477,8 @@ namespace detail {
         uint32_t GBufferId);
 
     void Send(rpc::ActorId ActorId, const rpc::CustomV2XBytes &data);
+
+    void SendUWBPayload(rpc::ActorId ActorId, const std::string &payload);
 
     void SetIgnoredVehicles(rpc::ActorId ActorId, const std::vector<rpc::ActorId>& vehicle_ids);
 

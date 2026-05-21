@@ -3,6 +3,14 @@
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
+//
+// -----------------------------------------------------------------------------
+// Modifications:
+// - Added UWB sensor
+//
+// Author: dh0508 (GitHub: https://github.com/dh0508)
+// Date: 2026
+// -----------------------------------------------------------------------------
 
 #include "carla/client/ServerSideSensor.h"
 
@@ -59,10 +67,20 @@ namespace client {
     log_debug("calling sensor Send() ", GetDisplayId());
     if (GetActorDescription().description.id != "sensor.other.v2x_custom")
     {
-      log_warning("Send methods are not supported on non-V2x sensors (sensor.other.v2x_custom).");
+      log_warning("Send() is only supported on sensor.other.v2x_custom.");
       return;
     }
-    GetEpisode().Lock()->Send(*this,data);
+    GetEpisode().Lock()->Send(*this, data);
+  }
+
+  void ServerSideSensor::SendUWBPayload(const std::string &payload) {
+    log_debug("calling sensor SendUWBPayload() ", GetDisplayId());
+    if (GetActorDescription().description.id != "sensor.other.uwb")
+    {
+      log_warning("send_uwb_payload() is only supported on sensor.other.uwb.");
+      return;
+    }
+    GetEpisode().Lock()->SendUWBPayload(*this, payload);
   }
 
   void ServerSideSensor::EnableGBuffers(bool bEnabled) {
