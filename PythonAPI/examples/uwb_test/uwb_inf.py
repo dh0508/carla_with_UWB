@@ -31,7 +31,7 @@ def build_tl_payload(tl, dist=0.0):
         'dist': f'{dist:.3f}',
         'signal': STATE_MAP.get(tl.get_state(), 'Unknown'),
         'test': 203948203948,
-        'test_text': "hello world",
+        'test_text': "git test",
     }
 # ──────────────────────────────────────────────────────────────────────────
 
